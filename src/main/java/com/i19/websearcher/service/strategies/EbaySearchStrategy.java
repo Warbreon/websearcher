@@ -43,7 +43,6 @@ public class EbaySearchStrategy implements SearchStrategy {
         headers.setBearerAuth(sandboxToken);
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        //Spring Frameworko builderis tam kad sukonstruoti URL
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(ebayEndpoint)
                 .queryParam("q", query);
 
