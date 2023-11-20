@@ -16,13 +16,13 @@
 //
 //    public String exchangeCodeForAccessToken(String code){
 //        try {
-//            // Попытка получения токена
+//            // Trying to get token
 //        } catch (HttpClientErrorException e) {
-//            // Обработка ошибки клиента, например, неверный запрос
+//            // Client error, wrong query
 //        } catch (HttpServerErrorException e) {
-//            // Обработка ошибки сервера, например, проблемы на стороне eBay
+//            // Server error, eBay problems
 //        } catch (Exception e) {
-//            // Обработка всех остальных исключений
+//            // Other exceptions
 //        }
 //        return null;
 //    }
