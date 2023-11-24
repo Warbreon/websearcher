@@ -4,6 +4,7 @@ import com.i19.websearcher.model.CartItem;
 import com.i19.websearcher.model.Product;
 import com.i19.websearcher.service.CartService;
 import com.i19.websearcher.service.ProductService;
+import com.i19.websearcher.service.commands.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -30,26 +31,34 @@ public class CartController {
     public String addToCart(@RequestParam String productId) {
         Product product = productService.findById(productId);
         if (product != null) {
-            cartService.addToCart(product);
+            //cartService.addToCart(product);
+            Command addCommand = new AddToCartCommand(cartService, product);
+            addCommand.execute();
         }
         return "redirect:/cart";
     }
 
     @PostMapping("/cart/remove")
     public String removeFromCart(@RequestParam Long cartItemId) {
-        cartService.removeItemFromCart(cartItemId);
+        //cartService.removeItemFromCart(cartItemId);
+        Command removeCommand = new RemoveItemFromCartCommand(cartService, cartItemId);
+        removeCommand.execute();
         return "redirect:/cart";
     }
 
     @PostMapping("/cart/add-one")
     public String addOneCartItem(@RequestParam Long cartItemId) {
-        cartService.addOneCartItem(cartItemId);
+        //cartService.addOneCartItem(cartItemId);
+        Command addOneCommand = new AddOneCartItemCommand(cartService, cartItemId);
+        addOneCommand.execute();
         return "redirect:/cart";
     }
 
     @PostMapping("/cart/remove-one")
     public String removeOneFromCart(@RequestParam Long cartItemId) {
-        cartService.removeOneItemFromCart(cartItemId);
+        //cartService.removeOneItemFromCart(cartItemId);
+        Command removeOneCommand = new RemoveOneItemFromCartCommand(cartService, cartItemId);
+        removeOneCommand.execute();
         return "redirect:/cart";
     }
 
