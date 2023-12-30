@@ -19,6 +19,10 @@
     </div>
     <div class="table-responsive" th:unless="${products.empty}">
         <div class="text-end mb-3">
+            <a th:href="@{/search(query=${query}, sort='name', direction='asc')}"
+               class="btn btn-outline-secondary">Sort by Name: Low to High</a>
+            <a th:href="@{/search(query=${query}, sort='name', direction='desc')}"
+               class="btn btn-outline-secondary">Sort by Name: High to Low</a>
             <a th:href="@{/search(query=${query}, sort='price', direction='asc')}"
                class="btn btn-outline-secondary">Sort by Price: Low to High</a>
             <a th:href="@{/search(query=${query}, sort='price', direction='desc')}"

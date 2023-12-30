@@ -59,14 +59,6 @@ public class SearchService {
         return cachingProxySearchStrategy.search(query);
     }
 
-//    public List<Product> performSearchAndSort(String query, String sort, boolean ascending) {
-//        List<Product> products = cachingProxySearchStrategy.search(query);
-//        if ("price".equals(sort)) {
-//            products = priceSortStrategy.sort(products, ascending);
-//        }
-//        return products;
-//    }
-
     public List<Product> performSearchAndSort(String query, String sort, boolean ascending) {
         List<Product> products = cachingProxySearchStrategy.search(query);
 
