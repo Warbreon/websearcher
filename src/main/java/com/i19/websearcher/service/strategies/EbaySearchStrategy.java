@@ -5,6 +5,7 @@ import com.i19.websearcher.model.ItemSummaries;
 import com.i19.websearcher.model.Price;
 import com.i19.websearcher.model.Product;
 import com.i19.websearcher.service.ProductService;
+import com.i19.websearcher.service.TokenService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,28 +23,29 @@ public class EbaySearchStrategy implements SearchStrategy {
     private static final Logger logger = LoggerFactory.getLogger(EbaySearchStrategy.class);
     private final RestTemplate restTemplate;
     private final ProductService productService;
-    private final String ebayEndpoint = "https://api.sandbox.ebay.com/buy/browse/v1/item_summary/search";
+    private final TokenService tokenService;
+    private final String EBAY_ENDPOINT = "https://api.sandbox.ebay.com/buy/browse/v1/item_summary/search";
 
-    @Value("${ebay.api.sandbox.token}")
-    private String sandboxToken;
-
-    public EbaySearchStrategy(RestTemplate restTemplate, ProductService productService) {
+    public EbaySearchStrategy(RestTemplate restTemplate, ProductService productService, TokenService tokenService) {
         this.restTemplate = restTemplate;
         this.productService = productService;
+        this.tokenService = tokenService;
     }
 
     @Override
     public List<Product> search(String query) {
-        if(query == null || query.trim().isEmpty()){
+        if (query == null || query.trim().isEmpty()) {
             logger.error("Search query is empty");
             return Collections.emptyList();
         }
+
+        String sandboxToken = tokenService.getCurrentAccessToken();
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(sandboxToken);
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(ebayEndpoint)
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(EBAY_ENDPOINT)
                 .queryParam("q", query);
 
         HttpEntity<String> entity = new HttpEntity<>(headers);
@@ -58,9 +60,9 @@ public class EbaySearchStrategy implements SearchStrategy {
         try {
             ItemSummaries summaries = objectMapper.readValue(response.getBody(), ItemSummaries.class);
             List<Product> products = summaries.getItems();
-            if(products != null){
+            if (products != null) {
                 products.forEach(product -> {
-                    if(product.getPrice() != null && product.getPrice().getValue() != null) {
+                    if (product.getPrice() != null && product.getPrice().getValue() != null) {
                         productService.saveProduct(product);
                     } else {
                         logger.warn("Product without price: " + product.getName());

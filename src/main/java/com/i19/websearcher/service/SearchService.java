@@ -19,19 +19,21 @@ public class SearchService {
     private final PriceSortStrategy priceSortStrategy;
     private final RestTemplate restTemplate;
     private final ProductService productService;
+    private final TokenService tokenService;
     private final CachingProxySearchStrategy cachingProxySearchStrategy;
     private final PriceSortStrategyFactory priceSortStrategyFactory;
     private final NameSortStrategyFactory nameSortStrategyFactory;
 
     @Autowired
     public SearchService(SearchStrategy searchStrategy, PriceSortStrategy priceSortStrategy,
-                         RestTemplate restTemplate, ProductService productService,
+                         RestTemplate restTemplate, ProductService productService, TokenService tokenService,
                          CachingProxySearchStrategy cachingProxySearchStrategy,
                          PriceSortStrategyFactory priceSortStrategyFactory, NameSortStrategyFactory nameSortStrategyFactory) {
         this.searchStrategy = searchStrategy;
         this.priceSortStrategy = priceSortStrategy;
         this.restTemplate = restTemplate;
         this.productService = productService;
+        this.tokenService = tokenService;
         this.cachingProxySearchStrategy = cachingProxySearchStrategy;
         this.priceSortStrategyFactory = priceSortStrategyFactory;
         this.nameSortStrategyFactory = nameSortStrategyFactory;
@@ -42,7 +44,7 @@ public class SearchService {
     }
 
     public List<Product> performSearchAdapter(String query) {
-        this.setSearchStrategy(new EbaySearchStrategy(restTemplate, productService));
+        this.setSearchStrategy(new EbaySearchStrategy(restTemplate, productService, tokenService));
         List<Product> ebayResults = searchStrategy.search(query);
 
         this.setSearchStrategy(new AmazonSearchStrategy());

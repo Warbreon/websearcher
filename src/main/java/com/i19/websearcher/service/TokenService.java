@@ -1,29 +1,23 @@
-//package com.i19.websearcher.service;
-//
-//import org.springframework.stereotype.Service;
-//import org.springframework.web.client.HttpClientErrorException;
-//import org.springframework.web.client.HttpServerErrorException;
-//
-//@Service
-//public class TokenService {
-//
-//
-//
-//    public String getAccessToken() {
-//
-//        return "";
-//    }
-//
-//    public String exchangeCodeForAccessToken(String code){
-//        try {
-//            // Trying to get token
-//        } catch (HttpClientErrorException e) {
-//            // Client error, wrong query
-//        } catch (HttpServerErrorException e) {
-//            // Server error, eBay problems
-//        } catch (Exception e) {
-//            // Other exceptions
-//        }
-//        return null;
-//    }
-//}
+package com.i19.websearcher.service;
+
+import com.i19.websearcher.dto.EbayTokenResponse;
+import com.i19.websearcher.model.token.EbayTokenData;
+import com.i19.websearcher.repository.EbayTokenRepository;
+import org.springframework.stereotype.Service;
+
+@Service
+public class TokenService {
+
+    private final EbayApiService ebayApiService;
+    private final EbayTokenRepository ebayTokenRepository;
+
+    public TokenService(EbayApiService ebayApiService, EbayTokenRepository ebayTokenRepository) {
+        this.ebayApiService = ebayApiService;
+        this.ebayTokenRepository = ebayTokenRepository;
+    }
+
+    public String getCurrentAccessToken() {
+        EbayTokenData ebayTokenData = ebayTokenRepository.findTopByOrderByIdDesc();
+        return ebayTokenData.getAccessToken();
+    }
+}
