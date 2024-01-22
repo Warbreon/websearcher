@@ -16,4 +16,7 @@ public class EbayApiConfig {
 
     @Value("${ebay.api.sandbox.cert-id}")
     private String clientSecret;
+
+    @Value("ebay.api.sandbox.ru-name")
+    private String ruName;
 }

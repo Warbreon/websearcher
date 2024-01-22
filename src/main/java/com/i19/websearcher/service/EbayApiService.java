@@ -5,9 +5,13 @@ import com.i19.websearcher.dto.EbayTokenResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 @Service
@@ -30,7 +34,7 @@ public class EbayApiService {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        headers.set("Authorization", "Basic" + encodedCredentials);
+        headers.set("Authorization", "Basic " + encodedCredentials);
 
         String requestBody = UriComponentsBuilder.fromHttpUrl("")
                 .queryParam("grant_type", "refresh_token")
@@ -46,5 +50,29 @@ public class EbayApiService {
         return response.getBody();
     }
 
+    public EbayTokenResponse getAccessTokenUsingCode(String authorizationCode) {
 
+        String decodedAuthCode = URLDecoder.decode(authorizationCode, StandardCharsets.UTF_8);
+
+        String credentials = ebayApiConfig.getClientId() + ":" + ebayApiConfig.getClientSecret();
+        String encodedCredentials = Base64.getEncoder().encodeToString(credentials.getBytes());
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        headers.set("Authorization", "Basic " + encodedCredentials);
+
+        MultiValueMap<String, String> requestBody = new LinkedMultiValueMap<>();
+        requestBody.add("grant_type", "authorization_code");
+        requestBody.add("code", decodedAuthCode);
+        requestBody.add("redirect_uri", ebayApiConfig.getRuName());
+
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(requestBody, headers);
+
+        ResponseEntity<EbayTokenResponse> response = restTemplate.exchange(
+                REFRESH_TOKEN_URL,
+                HttpMethod.POST, request, EbayTokenResponse.class);
+
+        log.info("Access token successfully retrieved using authorization code");
+        return response.getBody();
+    }
 }
