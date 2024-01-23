@@ -28,6 +28,7 @@ public class EbayApiService {
     }
 
     public EbayTokenResponse refreshToken(String currentRefreshToken) {
+        log.info("Processing: refreshToken");
 
         String credentials = ebayApiConfig.getClientId() + ":" + ebayApiConfig.getClientSecret();
         String encodedCredentials = new String(Base64.getEncoder().encode(credentials.getBytes()));
@@ -36,26 +37,36 @@ public class EbayApiService {
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         headers.set("Authorization", "Basic " + encodedCredentials);
 
-        String requestBody = UriComponentsBuilder.fromHttpUrl("")
-                .queryParam("grant_type", "refresh_token")
-                .queryParam("refresh_token", currentRefreshToken)
-                .toUriString().substring(1);
+        MultiValueMap<String, String> requestBody = new LinkedMultiValueMap<>();
+        requestBody.add("grant_type", "refresh_token");
+        requestBody.add("refresh_token", currentRefreshToken);
+        requestBody.add("scope", ebayApiConfig.getScope());
 
-        HttpEntity<String> request = new HttpEntity<>(requestBody, headers);
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(requestBody, headers);
         ResponseEntity<EbayTokenResponse> response = restTemplate.exchange(
                 REFRESH_TOKEN_URL,
-                HttpMethod.POST, request, EbayTokenResponse.class);
+                HttpMethod.POST,
+                request,
+                EbayTokenResponse.class
+        );
 
-        log.info("token successfully refreshed");
-        return response.getBody();
+        if(response.getStatusCode() == HttpStatus.OK) {
+            log.info("Token successfully refreshed. Access token: {}", response.getBody().getAccessToken());
+            return response.getBody();
+        } else {
+            log.error("Failed to refresh token. Status code: {}, Response body: {}", response.getStatusCode(), response.getBody());
+            throw new RuntimeException("Failed to obtain tokens: " + response.getStatusCode());
+        }
     }
 
-    public EbayTokenResponse getAccessTokenUsingCode(String authorizationCode) {
+    public EbayTokenResponse getNewAccessToken() {
+        log.info("Processing: getNewAccessToken");
 
-        String decodedAuthCode = URLDecoder.decode(authorizationCode, StandardCharsets.UTF_8);
+        String decodedAuthCode = URLDecoder.decode(ebayApiConfig.getAuthCode(), StandardCharsets.UTF_8);
+        log.debug("Decoded auth code: {}", decodedAuthCode);
 
         String credentials = ebayApiConfig.getClientId() + ":" + ebayApiConfig.getClientSecret();
-        String encodedCredentials = Base64.getEncoder().encodeToString(credentials.getBytes());
+        String encodedCredentials = Base64.getEncoder().encodeToString(credentials.getBytes(StandardCharsets.UTF_8));
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -70,9 +81,20 @@ public class EbayApiService {
 
         ResponseEntity<EbayTokenResponse> response = restTemplate.exchange(
                 REFRESH_TOKEN_URL,
-                HttpMethod.POST, request, EbayTokenResponse.class);
+                HttpMethod.POST,
+                request,
+                EbayTokenResponse.class
+        );
 
-        log.info("Access token successfully retrieved using authorization code");
-        return response.getBody();
+        if (response.getStatusCode() == HttpStatus.OK) {
+            log.info("Response from eBay API: {}", response.getBody());
+        }
+        if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null && response.getBody().getAccessToken() != null) {
+            log.info("Access token successfully retrieved using authorization code");
+            return response.getBody();
+        } else {
+            log.error("Failed to obtain tokens. Status code: {}, Response body: {}", response.getStatusCode(), response.getBody());
+            throw new RuntimeException("Failed to obtain tokens: " + response.getStatusCode() + " Response body: " + response.getBody());
+        }
     }
 }

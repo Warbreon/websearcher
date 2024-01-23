@@ -12,7 +12,11 @@ public class EbayTokenData {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(length = 2700)
     private String accessToken;
+
     private String refreshToken;
     private Long expirationTime;
+
+
 }
