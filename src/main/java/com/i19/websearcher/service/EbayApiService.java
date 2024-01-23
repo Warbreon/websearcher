@@ -31,7 +31,7 @@ public class EbayApiService {
         log.info("Processing: refreshToken");
 
         String credentials = ebayApiConfig.getClientId() + ":" + ebayApiConfig.getClientSecret();
-        String encodedCredentials = new String(Base64.getEncoder().encode(credentials.getBytes()));
+        String encodedCredentials = Base64.getEncoder().encodeToString(credentials.getBytes(StandardCharsets.UTF_8));
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
