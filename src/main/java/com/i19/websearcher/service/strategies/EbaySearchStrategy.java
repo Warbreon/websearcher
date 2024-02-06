@@ -24,7 +24,7 @@ public class EbaySearchStrategy implements SearchStrategy {
     private final RestTemplate restTemplate;
     private final ProductService productService;
     private final TokenService tokenService;
-    private final String EBAY_ENDPOINT = "https://api.sandbox.ebay.com/buy/browse/v1/item_summary/search";
+    private static final String EBAY_ENDPOINT = "https://api.sandbox.ebay.com/buy/browse/v1/item_summary/search";
 
     public EbaySearchStrategy(RestTemplate restTemplate, ProductService productService, TokenService tokenService) {
         this.restTemplate = restTemplate;

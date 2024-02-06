@@ -19,7 +19,7 @@ public class EbayApiService {
 
     private final EbayApiConfig ebayApiConfig;
     private final RestTemplate restTemplate;
-    private final String REFRESH_TOKEN_URL = "https://api.sandbox.ebay.com/identity/v1/oauth2/token";
+    private static final String REFRESH_TOKEN_URL = "https://api.sandbox.ebay.com/identity/v1/oauth2/token";
 
     public EbayApiService(EbayApiConfig ebayApiConfig, RestTemplate restTemplate) {
         this.ebayApiConfig = ebayApiConfig;
