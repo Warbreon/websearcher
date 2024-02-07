@@ -62,4 +62,37 @@ public class EbayApiServiceTest {
         assertEquals("testToken", response.getAccessToken());
         assertEquals(7200, response.getExpiresIn());
     }
+
+    @Test
+    void testRefreshToken() {
+
+        String mockCurrentRefreshToken = "mockCurrentRefreshToken";
+        String mockClientId = "mockClientId";
+        String mockClientSecret = "mockClientSecret";
+        String mockScope = "mockScope1 mockScope2";
+
+        EbayTokenResponse mockResponse = new EbayTokenResponse();
+        mockResponse.setRefreshToken("refreshToken");
+        mockResponse.setExpiresIn(7200);
+        mockResponse.setAccessToken("accessToken");
+
+        when(ebayApiConfig.getClientId()).thenReturn(mockClientId);
+        when(ebayApiConfig.getClientSecret()).thenReturn(mockClientSecret);
+        when(ebayApiConfig.getScope()).thenReturn(mockScope);
+
+        when(restTemplate.exchange(
+                any(String.class),
+                any(),
+                any(),
+                any(Class.class)))
+                .thenReturn(ResponseEntity.ok(mockResponse)
+        );
+
+        EbayTokenResponse response = ebayApiService.refreshToken(mockCurrentRefreshToken);
+
+        assertNotNull(response);
+        assertEquals("refreshToken", response.getRefreshToken());
+        assertEquals("accessToken", response.getAccessToken());
+        assertEquals(7200, response.getExpiresIn());
+    }
 }
