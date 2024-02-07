@@ -23,19 +23,7 @@ public class TokenService {
         EbayTokenData ebayTokenData = ebayTokenRepository.findTopByOrderByIdDesc();
 
         if (ebayTokenData == null || tokenIsExpired(ebayTokenData)) {
-            EbayTokenResponse response;
-
-            if (ebayTokenData == null) {
-                response = ebayApiService.getNewAccessToken();
-                ebayTokenData = new EbayTokenData();
-            } else {
-                response = ebayApiService.refreshToken(ebayTokenData.getRefreshToken());
-            }
-            ebayTokenData.setAccessToken(response.getAccessToken());
-            ebayTokenData.setRefreshToken(response.getRefreshToken());
-            ebayTokenData.setExpirationTime(Instant.now().getEpochSecond() + response.getExpiresIn());
-
-            ebayTokenRepository.save(ebayTokenData);
+            ebayTokenData = updateEbayToken(ebayTokenData);
         }
 
         return ebayTokenData.getAccessToken();
@@ -43,5 +31,23 @@ public class TokenService {
 
     private boolean tokenIsExpired(EbayTokenData ebayTokenData) {
         return Instant.now().getEpochSecond() > ebayTokenData.getExpirationTime();
+    }
+
+    private EbayTokenData updateEbayToken(EbayTokenData ebayTokenData) {
+        EbayTokenResponse response;
+
+        if (ebayTokenData == null) {
+            response = ebayApiService.getNewAccessToken();
+            ebayTokenData = new EbayTokenData();
+        } else {
+            response = ebayApiService.refreshToken(ebayTokenData.getRefreshToken());
+        }
+        ebayTokenData.setAccessToken(response.getAccessToken());
+        ebayTokenData.setRefreshToken(response.getRefreshToken());
+        ebayTokenData.setExpirationTime(Instant.now().getEpochSecond() + response.getExpiresIn());
+
+        ebayTokenRepository.save(ebayTokenData);
+
+        return ebayTokenData;
     }
 }
