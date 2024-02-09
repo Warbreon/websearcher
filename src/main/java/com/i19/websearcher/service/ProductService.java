@@ -5,6 +5,8 @@ import com.i19.websearcher.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class ProductService {
 
@@ -21,5 +23,9 @@ public class ProductService {
 
     public Product findById(String id) {
         return productRepository.findById(id).orElse(null);
+    }
+
+    public List<Product> findAll() {
+        return productRepository.findAll();
     }
 }
