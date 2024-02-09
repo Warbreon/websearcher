@@ -31,7 +31,6 @@ public class CartController {
     public String addToCart(@RequestParam String productId) {
         Product product = productService.findById(productId);
         if (product != null) {
-            //cartService.addToCart(product);
             Command addCommand = new AddToCartCommand(cartService, product);
             addCommand.execute();
         }
@@ -40,7 +39,6 @@ public class CartController {
 
     @PostMapping("/cart/remove")
     public String removeFromCart(@RequestParam Long cartItemId) {
-        //cartService.removeItemFromCart(cartItemId);
         Command removeCommand = new RemoveItemFromCartCommand(cartService, cartItemId);
         removeCommand.execute();
         return "redirect:/cart";
@@ -48,7 +46,6 @@ public class CartController {
 
     @PostMapping("/cart/add-one")
     public String addOneCartItem(@RequestParam Long cartItemId) {
-        //cartService.addOneCartItem(cartItemId);
         Command addOneCommand = new AddOneCartItemCommand(cartService, cartItemId);
         addOneCommand.execute();
         return "redirect:/cart";
@@ -56,7 +53,6 @@ public class CartController {
 
     @PostMapping("/cart/remove-one")
     public String removeOneFromCart(@RequestParam Long cartItemId) {
-        //cartService.removeOneItemFromCart(cartItemId);
         Command removeOneCommand = new RemoveOneItemFromCartCommand(cartService, cartItemId);
         removeOneCommand.execute();
         return "redirect:/cart";
