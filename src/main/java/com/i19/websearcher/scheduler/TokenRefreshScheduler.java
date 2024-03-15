@@ -44,18 +44,21 @@ public class TokenRefreshScheduler {
     }
 
     private void saveNewTokenData(EbayTokenResponse ebayTokenResponse) {
-        if (ebayTokenResponse.getAccessToken() == null || ebayTokenResponse.getRefreshToken() == null) {
+        if (ebayTokenResponse.getAccessToken() == null) {
             log.error("Access token or refresh token is null. Token response: {}", ebayTokenResponse);
             throw new IllegalStateException("Received null token(s) from eBay API.");
         }
 
-        EbayTokenData newTokenData = new EbayTokenData();
+        EbayTokenData currentTokenData = ebayTokenRepository.findTopByOrderByIdDesc();
 
-        newTokenData.setAccessToken(ebayTokenResponse.getAccessToken());
-        newTokenData.setRefreshToken(ebayTokenResponse.getRefreshToken());
-        newTokenData.setExpirationTime(Instant.now().getEpochSecond() + ebayTokenResponse.getExpiresIn());
+        currentTokenData.setAccessToken(ebayTokenResponse.getAccessToken());
+        currentTokenData.setExpirationTime(Instant.now().getEpochSecond() + ebayTokenResponse.getExpiresIn());
 
-        ebayTokenRepository.save(newTokenData);
-        log.info("New token data saved. Access token: {}", newTokenData.getAccessToken());
+        if (ebayTokenResponse.getRefreshToken() != null) {
+            currentTokenData.setRefreshToken(ebayTokenResponse.getRefreshToken());
+        }
+
+        ebayTokenRepository.save(currentTokenData);
+        log.info("New token data saved. Access token: {}", currentTokenData.getAccessToken());
     }
 }
