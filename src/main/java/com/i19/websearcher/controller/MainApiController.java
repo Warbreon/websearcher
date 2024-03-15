@@ -2,25 +2,22 @@ package com.i19.websearcher.controller;
 
 import com.i19.websearcher.model.Product;
 import com.i19.websearcher.service.SearchService;
+import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
+@AllArgsConstructor
 public class MainApiController {
 
     private final SearchService searchService;
-
-    public MainApiController(SearchService searchService) {
-        this.searchService = searchService;
-    }
 
     @GetMapping("/")
     public Map<String, String> home() {

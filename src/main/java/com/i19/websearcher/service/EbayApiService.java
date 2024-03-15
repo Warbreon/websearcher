@@ -2,6 +2,7 @@ package com.i19.websearcher.service;
 
 import com.i19.websearcher.config.EbayApiConfig;
 import com.i19.websearcher.dto.EbayTokenResponse;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -15,16 +16,12 @@ import java.util.Base64;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class EbayApiService {
 
     private final EbayApiConfig ebayApiConfig;
     private final RestTemplate restTemplate;
     private static final String REFRESH_TOKEN_URL = "https://api.sandbox.ebay.com/identity/v1/oauth2/token";
-
-    public EbayApiService(EbayApiConfig ebayApiConfig, RestTemplate restTemplate) {
-        this.ebayApiConfig = ebayApiConfig;
-        this.restTemplate = restTemplate;
-    }
 
     public EbayTokenResponse refreshToken(String currentRefreshToken) {
         log.info("Processing: refreshToken");
@@ -49,7 +46,7 @@ public class EbayApiService {
                 EbayTokenResponse.class
         );
 
-        if(response.getStatusCode() == HttpStatus.OK) {
+        if(response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
             log.info("Token successfully refreshed. Access token: {}", response.getBody().getAccessToken());
             return response.getBody();
         } else {

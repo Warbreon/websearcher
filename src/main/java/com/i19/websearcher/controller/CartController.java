@@ -5,7 +5,7 @@ import com.i19.websearcher.model.Product;
 import com.i19.websearcher.service.CartService;
 import com.i19.websearcher.service.ProductService;
 import com.i19.websearcher.service.commands.*;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,16 +16,11 @@ import java.math.BigDecimal;
 import java.util.List;
 
 @Controller
+@AllArgsConstructor
 public class CartController {
 
     private final CartService cartService;
     private final ProductService productService;
-
-    @Autowired
-    public CartController(CartService cartService, ProductService productService) {
-        this.cartService = cartService;
-        this.productService = productService;
-    }
 
     @PostMapping("/cart/add")
     public String addToCart(@RequestParam String productId) {

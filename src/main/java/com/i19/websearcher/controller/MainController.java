@@ -2,7 +2,7 @@ package com.i19.websearcher.controller;
 
 import com.i19.websearcher.model.Product;
 import com.i19.websearcher.service.SearchService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,14 +11,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.util.List;
 
 @Controller
+@AllArgsConstructor
 public class MainController {
 
     private final SearchService searchService;
-
-    @Autowired
-    public MainController(SearchService searchService) {
-        this.searchService = searchService;
-    }
 
     @GetMapping("/")
     public String home(Model model) {

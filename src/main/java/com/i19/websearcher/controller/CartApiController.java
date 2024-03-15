@@ -5,6 +5,7 @@ import com.i19.websearcher.model.Product;
 import com.i19.websearcher.service.CartService;
 import com.i19.websearcher.service.ProductService;
 import com.i19.websearcher.service.commands.*;
+import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -14,15 +15,11 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/cart")
+@AllArgsConstructor
 public class CartApiController {
 
     private final CartService cartService;
     private final ProductService productService;
-
-    public CartApiController(CartService cartService, ProductService productService) {
-        this.cartService = cartService;
-        this.productService = productService;
-    }
 
     @PostMapping("/add")
     public Map<String, Object> addToCart(@RequestParam String productId) {

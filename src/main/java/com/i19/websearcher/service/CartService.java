@@ -27,7 +27,7 @@ public class CartService {
         return cartItemRepository.findAll();
     }
 
-    public CartItem addToCart(Product product) {
+    public void addToCart(Product product) {
         CartItem cartItem = cartItemRepository.findByProduct(product)
                 .orElseGet(() -> {
                     CartItem newCartItem = new CartItem();
@@ -38,7 +38,7 @@ public class CartService {
 
         cartItem.setQuantity(cartItem.getQuantity() + 1);
         publishCartEvent(cartItem, "add");
-        return cartItemRepository.save(cartItem);
+        cartItemRepository.save(cartItem);
     }
 
     public void removeItemFromCart(Long cartItemId) {

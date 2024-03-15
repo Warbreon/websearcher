@@ -4,6 +4,7 @@ import com.i19.websearcher.dto.EbayTokenResponse;
 import com.i19.websearcher.model.token.EbayTokenData;
 import com.i19.websearcher.repository.EbayTokenRepository;
 import com.i19.websearcher.service.EbayApiService;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -12,15 +13,11 @@ import java.time.Instant;
 
 @Component
 @Slf4j
+@AllArgsConstructor
 public class TokenRefreshScheduler {
 
     private final EbayApiService ebayApiService;
     private final EbayTokenRepository ebayTokenRepository;
-
-    public TokenRefreshScheduler(EbayApiService ebayApiService, EbayTokenRepository ebayTokenRepository) {
-        this.ebayApiService = ebayApiService;
-        this.ebayTokenRepository = ebayTokenRepository;
-    }
 
     @Scheduled(fixedRate = 1000 * 60 * 60)
     public void refreshEbayToken() {

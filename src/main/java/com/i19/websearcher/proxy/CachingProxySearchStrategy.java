@@ -2,6 +2,7 @@ package com.i19.websearcher.proxy;
 
 import com.i19.websearcher.model.Product;
 import com.i19.websearcher.service.strategies.SearchStrategy;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
@@ -11,14 +12,11 @@ import java.util.Map;
 
 @Service
 @Primary
+@RequiredArgsConstructor
 public class CachingProxySearchStrategy implements SearchStrategy {
 
     private final SearchStrategy searchStrategy;
     private final Map<String, List<Product>> cache = new HashMap<>();
-
-    public CachingProxySearchStrategy(SearchStrategy searchStrategy) {
-        this.searchStrategy = searchStrategy;
-    }
 
     @Override
     public List<Product> search(String query) {

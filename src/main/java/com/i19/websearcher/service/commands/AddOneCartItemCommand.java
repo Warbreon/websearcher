@@ -1,16 +1,13 @@
 package com.i19.websearcher.service.commands;
 
 import com.i19.websearcher.service.CartService;
+import lombok.AllArgsConstructor;
 
+@AllArgsConstructor
 public class AddOneCartItemCommand implements Command {
 
-    private CartService cartService;
-    private Long cartItemId;
-
-    public AddOneCartItemCommand(CartService cartService, Long cartItemId) {
-        this.cartService = cartService;
-        this.cartItemId = cartItemId;
-    }
+    private final CartService cartService;
+    private final Long cartItemId;
 
     @Override
     public void execute() {

@@ -5,6 +5,7 @@ import com.i19.websearcher.proxy.CachingProxySearchStrategy;
 import com.i19.websearcher.service.strategies.*;
 import com.i19.websearcher.service.strategies.factories.NameSortStrategyFactory;
 import com.i19.websearcher.service.strategies.factories.PriceSortStrategyFactory;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -13,31 +14,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@AllArgsConstructor
 public class SearchService {
 
     private SearchStrategy searchStrategy;
-    private final PriceSortStrategy priceSortStrategy;
     private final RestTemplate restTemplate;
     private final ProductService productService;
     private final TokenService tokenService;
     private final CachingProxySearchStrategy cachingProxySearchStrategy;
     private final PriceSortStrategyFactory priceSortStrategyFactory;
     private final NameSortStrategyFactory nameSortStrategyFactory;
-
-    @Autowired
-    public SearchService(SearchStrategy searchStrategy, PriceSortStrategy priceSortStrategy,
-                         RestTemplate restTemplate, ProductService productService, TokenService tokenService,
-                         CachingProxySearchStrategy cachingProxySearchStrategy,
-                         PriceSortStrategyFactory priceSortStrategyFactory, NameSortStrategyFactory nameSortStrategyFactory) {
-        this.searchStrategy = searchStrategy;
-        this.priceSortStrategy = priceSortStrategy;
-        this.restTemplate = restTemplate;
-        this.productService = productService;
-        this.tokenService = tokenService;
-        this.cachingProxySearchStrategy = cachingProxySearchStrategy;
-        this.priceSortStrategyFactory = priceSortStrategyFactory;
-        this.nameSortStrategyFactory = nameSortStrategyFactory;
-    }
 
     public void setSearchStrategy(SearchStrategy searchStrategy) {
         this.searchStrategy = searchStrategy;
@@ -62,7 +48,7 @@ public class SearchService {
     }
 
     public List<Product> performSearchAndSort(String query, String sort, boolean ascending) {
-        List<Product> products = cachingProxySearchStrategy.search(query);
+        List<Product> products = performSearch(query);
 
         SortStrategy sortStrategy = getSortStrategy(sort);
         if (sortStrategy != null) {
@@ -71,7 +57,7 @@ public class SearchService {
         return products;
     }
 
-    public SortStrategy getSortStrategy(String type) {
+    private SortStrategy getSortStrategy(String type) {
         if("price".equals(type)) {
             return priceSortStrategyFactory.createSortStrategy();
         } else if ("name".equals(type)) {

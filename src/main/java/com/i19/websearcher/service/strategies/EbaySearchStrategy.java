@@ -6,9 +6,8 @@ import com.i19.websearcher.model.Price;
 import com.i19.websearcher.model.Product;
 import com.i19.websearcher.service.ProductService;
 import com.i19.websearcher.service.TokenService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.http.*;
@@ -18,24 +17,19 @@ import java.util.Collections;
 import java.util.List;
 
 @Service
+@Slf4j
+@RequiredArgsConstructor
 public class EbaySearchStrategy implements SearchStrategy {
 
-    private static final Logger logger = LoggerFactory.getLogger(EbaySearchStrategy.class);
     private final RestTemplate restTemplate;
     private final ProductService productService;
     private final TokenService tokenService;
     private static final String EBAY_ENDPOINT = "https://api.sandbox.ebay.com/buy/browse/v1/item_summary/search";
 
-    public EbaySearchStrategy(RestTemplate restTemplate, ProductService productService, TokenService tokenService) {
-        this.restTemplate = restTemplate;
-        this.productService = productService;
-        this.tokenService = tokenService;
-    }
-
     @Override
     public List<Product> search(String query) {
         if (query == null || query.trim().isEmpty()) {
-            logger.error("Search query is empty");
+            log.error("Search query is empty");
             return Collections.emptyList();
         }
 
@@ -65,7 +59,7 @@ public class EbaySearchStrategy implements SearchStrategy {
                     if (product.getPrice() != null && product.getPrice().getValue() != null) {
                         productService.saveProduct(product);
                     } else {
-                        logger.warn("Product without price: " + product.getName());
+                        log.warn("Product without price: " + product.getName());
                         Price defaultPrice = new Price();
                         defaultPrice.setValue("0");
                         defaultPrice.setCurrency("USD");
@@ -76,11 +70,11 @@ public class EbaySearchStrategy implements SearchStrategy {
                 });
                 return products;
             } else {
-                logger.info("No products found of {} kind were found", query);
+                log.info("No products found of {} kind were found", query);
                 return Collections.emptyList();
             }
         } catch (Exception e) {
-            logger.error("Error processing the search results: " + e.getMessage());
+            log.error("Error processing the search results: " + e.getMessage());
             return Collections.emptyList();
         }
     }
