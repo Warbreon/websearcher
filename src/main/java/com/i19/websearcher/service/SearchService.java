@@ -8,7 +8,6 @@ import com.i19.websearcher.service.strategies.factories.PriceSortStrategyFactory
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,18 +17,14 @@ import java.util.concurrent.CompletableFuture;
 @AllArgsConstructor
 public class SearchService {
 
-    private SearchStrategy searchStrategy;
-    private final RestTemplate restTemplate;
-    private final ProductService productService;
-    private final TokenService tokenService;
-    @Autowired
-    private final CachingProxySearchStrategy cachingProxySearchStrategy;
-    private final PriceSortStrategyFactory priceSortStrategyFactory;
-    private final NameSortStrategyFactory nameSortStrategyFactory;
     @Autowired
     private SearchStrategy ebaySearchStrategy;
     @Autowired
     private SearchStrategy amazonSearchStrategy;
+    @Autowired
+    private final CachingProxySearchStrategy cachingProxySearchStrategy;
+    private final PriceSortStrategyFactory priceSortStrategyFactory;
+    private final NameSortStrategyFactory nameSortStrategyFactory;
 
     public CompletableFuture<List<Product>> performSearchAdapter(String query) {
         return cachingProxySearchStrategy.search(query, () -> {
@@ -45,10 +40,6 @@ public class SearchService {
                     });
         });
     }
-
-//    public CompletableFuture<List<Product>> performSearch(String query) {
-//        return cachingProxySearchStrategy.search(query);
-//    }
 
     public CompletableFuture<List<Product>> performSearchAndSort(String query, String sort, boolean ascending) {
         return performSearchAdapter(query).thenApply(products -> {
