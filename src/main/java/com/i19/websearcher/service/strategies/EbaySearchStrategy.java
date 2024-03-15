@@ -1,5 +1,6 @@
 package com.i19.websearcher.service.strategies;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.i19.websearcher.model.ItemSummaries;
 import com.i19.websearcher.model.Price;
@@ -17,6 +18,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -37,45 +39,18 @@ public class EbaySearchStrategy implements SearchStrategy {
                 return Collections.<Product>emptyList();
             }
             try {
-            String sandboxToken = tokenService.getCurrentAccessToken();
+                HttpHeaders headers = setupHeaders();
+                String searchUri = buildSearchUri(query);
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.setBearerAuth(sandboxToken);
-            headers.setContentType(MediaType.APPLICATION_JSON);
+                HttpEntity<String> entity = new HttpEntity<>(headers);
+                ResponseEntity<String> response = restTemplate.exchange(
+                        searchUri,
+                        HttpMethod.GET,
+                        entity,
+                        String.class
+                );
 
-            UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(EBAY_ENDPOINT)
-                    .queryParam("q", query);
-
-            HttpEntity<String> entity = new HttpEntity<>(headers);
-            ResponseEntity<String> response = restTemplate.exchange(
-                    builder.toUriString(),
-                    HttpMethod.GET,
-                    entity,
-                    String.class
-            );
-
-            ObjectMapper objectMapper = new ObjectMapper();
-
-                ItemSummaries summaries = objectMapper.readValue(response.getBody(), ItemSummaries.class);
-                List<Product> products = summaries.getItems();
-                if (products != null) {
-                    products.forEach(product -> {
-                        if (product.getPrice() != null && product.getPrice().getValue() != null) {
-                            productService.saveProduct(product);
-                        } else {
-                            log.warn("Product without price: " + product.getName());
-                            Price defaultPrice = new Price();
-                            defaultPrice.setValue("0");
-                            defaultPrice.setCurrency("USD");
-                            product.setPrice(defaultPrice);
-
-                            productService.saveProduct(product);
-                        }
-                    });
-                } else {
-                    log.info("No products found of {} kind were found", query);
-                }
-                return products != null ? products : Collections.<Product>emptyList();
+                return processResponse(response.getBody(), query);
             } catch (Exception e) {
                 log.error("Error processing the search results: " + e.getMessage());
                 return Collections.<Product>emptyList();
@@ -84,6 +59,54 @@ public class EbaySearchStrategy implements SearchStrategy {
            log.error("Error processing the search results: " + ex.getMessage());
            return Collections.emptyList();
         });
+    }
 
+    private HttpHeaders setupHeaders() {
+        String sandboxToken = tokenService.getCurrentAccessToken();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(sandboxToken);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        return headers;
+    }
+
+    private String buildSearchUri(String query) {
+        return UriComponentsBuilder.fromHttpUrl(EBAY_ENDPOINT)
+                .queryParam("q", query)
+                .toUriString();
+    }
+
+    private Product processProduct(Product product) {
+        if (product.getPrice() != null && product.getPrice().getValue() != null) {
+            productService.saveProduct(product);
+        } else {
+            log.warn("Product without price: " + product.getName());
+            Price defaultPrice = new Price();
+            defaultPrice.setValue("0");
+            defaultPrice.setCurrency("USD");
+            product.setPrice(defaultPrice);
+
+            productService.saveProduct(product);
+        }
+        return product;
+    }
+
+    private List<Product> processResponse(String responseBody, String query) {
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            ItemSummaries summaries = objectMapper.readValue(responseBody, ItemSummaries.class);
+            if (summaries.getItems() != null && !summaries.getItems().isEmpty()) {
+                return summaries.getItems()
+                        .stream()
+                        .map(this::processProduct)
+                        .collect(Collectors.toList());
+            } else {
+                log.info("No products found of {} kind were found", query);
+            }
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Error processing search results: " + e.getMessage());
+        }
+        return Collections.emptyList();
     }
 }
