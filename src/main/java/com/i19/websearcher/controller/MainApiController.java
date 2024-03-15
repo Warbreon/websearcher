@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/api")
@@ -32,13 +33,15 @@ public class MainApiController {
                          @RequestParam(required = false) String direction
                          ) {
         boolean ascending = "asc".equals(direction);
-        List<Product> products;
+        CompletableFuture<List<Product>> futureProducts;
 
         if(sort != null) {
-            products = searchService.performSearchAndSort(query, sort, ascending);
+            futureProducts = searchService.performSearchAndSort(query, sort, ascending);
         } else {
-            products = searchService.performSearch(query);
+            futureProducts = searchService.performSearchAdapter(query);
         }
+
+        List<Product> products = futureProducts.join();
 
         Map<String, Object> response = new HashMap<>();
         response.put("query", query);

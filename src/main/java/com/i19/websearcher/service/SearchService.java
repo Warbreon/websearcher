@@ -12,6 +12,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @AllArgsConstructor
@@ -21,40 +22,42 @@ public class SearchService {
     private final RestTemplate restTemplate;
     private final ProductService productService;
     private final TokenService tokenService;
+    @Autowired
     private final CachingProxySearchStrategy cachingProxySearchStrategy;
     private final PriceSortStrategyFactory priceSortStrategyFactory;
     private final NameSortStrategyFactory nameSortStrategyFactory;
+    @Autowired
+    private SearchStrategy ebaySearchStrategy;
+    @Autowired
+    private SearchStrategy amazonSearchStrategy;
 
-    public void setSearchStrategy(SearchStrategy searchStrategy) {
-        this.searchStrategy = searchStrategy;
+    public CompletableFuture<List<Product>> performSearchAdapter(String query) {
+        return cachingProxySearchStrategy.search(query, () -> {
+            CompletableFuture<List<Product>> ebayFuture = ebaySearchStrategy.search(query);
+            CompletableFuture<List<Product>> amazonFuture = amazonSearchStrategy.search(query);
+
+            return CompletableFuture.allOf(ebayFuture, amazonFuture)
+                    .thenApply(v -> {
+                        List<Product> results = new ArrayList<>();
+                        results.addAll(ebayFuture.join());
+                        results.addAll(amazonFuture.join());
+                        return results;
+                    });
+        });
     }
 
-    public List<Product> performSearchAdapter(String query) {
-        this.setSearchStrategy(new EbaySearchStrategy(restTemplate, productService, tokenService));
-        List<Product> ebayResults = searchStrategy.search(query);
+//    public CompletableFuture<List<Product>> performSearch(String query) {
+//        return cachingProxySearchStrategy.search(query);
+//    }
 
-        this.setSearchStrategy(new AmazonSearchStrategy());
-        List<Product> amazonResults = searchStrategy.search(query);
-
-        List<Product> combinedResults = new ArrayList<>();
-        combinedResults.addAll(ebayResults);
-        combinedResults.addAll(amazonResults);
-
-        return combinedResults;
-    }
-
-    public List<Product> performSearch(String query) {
-        return cachingProxySearchStrategy.search(query);
-    }
-
-    public List<Product> performSearchAndSort(String query, String sort, boolean ascending) {
-        List<Product> products = performSearch(query);
-
-        SortStrategy sortStrategy = getSortStrategy(sort);
-        if (sortStrategy != null) {
-            products = sortStrategy.sort(products, ascending);
-        }
-        return products;
+    public CompletableFuture<List<Product>> performSearchAndSort(String query, String sort, boolean ascending) {
+        return performSearchAdapter(query).thenApply(products -> {
+            SortStrategy sortStrategy = getSortStrategy(sort);
+            if (sortStrategy != null) {
+                products = sortStrategy.sort(products, ascending);
+            }
+            return products;
+        });
     }
 
     private SortStrategy getSortStrategy(String type) {

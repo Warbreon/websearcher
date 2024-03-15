@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Controller
 @AllArgsConstructor
@@ -28,13 +29,15 @@ public class MainController {
                          @RequestParam(required = false) String direction,
                          Model model){
         boolean ascending = "asc".equals(direction);
-        List<Product> products;
+        CompletableFuture<List<Product>> futureProducts;
 
         if(sort != null) {
-            products = searchService.performSearchAndSort(query, sort, ascending);
+            futureProducts = searchService.performSearchAndSort(query, sort, ascending);
         } else {
-            products = searchService.performSearch(query);
+            futureProducts = searchService.performSearchAdapter(query);
         }
+
+        List<Product> products = futureProducts.join();
 
         model.addAttribute("query", query);
         model.addAttribute("products", products);
