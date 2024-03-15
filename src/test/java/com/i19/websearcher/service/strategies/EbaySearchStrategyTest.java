@@ -1,10 +1,8 @@
 package com.i19.websearcher.service.strategies;
 
-import com.i19.websearcher.model.ItemSummaries;
 import com.i19.websearcher.model.Product;
 import com.i19.websearcher.service.ProductService;
 import com.i19.websearcher.service.TokenService;
-import org.glassfish.jaxb.core.v2.TODO;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -17,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.eq;
@@ -54,7 +53,8 @@ public class EbaySearchStrategyTest {
                 eq(String.class)))
                 .thenReturn(new ResponseEntity<>(mockResponseBody, HttpStatus.OK));
 
-        List<Product> result = ebaySearchStrategy.search(query);
+        CompletableFuture<List<Product>> futureResult = ebaySearchStrategy.search(query);
+        List<Product> result = futureResult.join();
 
         assertNotNull(result);
         assertFalse(result.isEmpty());
@@ -64,6 +64,11 @@ public class EbaySearchStrategyTest {
 
     @Test
     void testSearchWithEmptyQuery() {
+        String query = "";
 
+        CompletableFuture<List<Product>> futureResult = ebaySearchStrategy.search(query);
+        List<Product> result = futureResult.join();
+
+        assertTrue(result.isEmpty());
     }
 }
